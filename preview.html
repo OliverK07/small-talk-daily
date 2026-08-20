@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Small Talk Daily (雙語閒聊日報) — Google Trends 趨勢、經典對話與笑話</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Noto Sans TC"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons & Confetti -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .card-enter { animation: cardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .device-screen { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased transition-colors duration-200">
+
+  <!-- Top Controller Bar -->
+  <header class="bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 backdrop-blur-md px-4 py-2.5">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 via-amber-500 to-sky-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 text-base">
+          🌐
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            Small Talk Daily <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 font-semibold">Bilingual · Google Trends</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">中英雙語對照 · 每日 Google 熱搜趨勢 · 經典破冰 · 幽默笑話</p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-2">
+        <!-- Language Switcher -->
+        <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg flex items-center text-xs font-semibold border border-slate-200 dark:border-slate-700">
+          <button onclick="setLangMode('bilingual')" id="btnLangBilingual" class="px-2 py-1 rounded-md bg-white dark:bg-slate-700 shadow-xs text-orange-600 dark:text-orange-400 text-[11px] transition-all">
+            中英對照
+          </button>
+          <button onclick="setLangMode('zh')" id="btnLangZh" class="px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 text-[11px] transition-all">
+            中文
+          </button>
+          <button onclick="setLangMode('en')" id="btnLangEn" class="px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 text-[11px] transition-all">
+            English
+          </button>
+        </div>
+
+        <!-- View Mode Switch -->
+        <div class="hidden sm:flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg items-center text-xs font-medium border border-slate-200 dark:border-slate-700">
+          <button id="btnViewMobile" onclick="setViewMode('mobile')" class="px-2.5 py-1 rounded-md bg-white dark:bg-slate-700 shadow-xs text-orange-600 dark:text-orange-400 flex items-center gap-1.5 transition-all">
+            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> 手機
+          </button>
+          <button id="btnViewFull" onclick="setViewMode('full')" class="px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-all">
+            <i data-lucide="monitor" class="w-3.5 h-3.5"></i> 寬螢幕
+          </button>
+        </div>
+
+        <!-- Dark/Light Mode -->
+        <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="切換深色/淺色主題">
+          <i id="themeIcon" data-lucide="moon" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+    
+    <!-- Phone / Screen Mockup Frame -->
+    <div id="appContainer" class="w-full max-w-[440px] h-[820px] bg-white dark:bg-slate-900 rounded-[40px] shadow-2xl border-[8px] border-slate-800 dark:border-slate-700 relative flex flex-col overflow-hidden device-screen">
+      
+      <!-- Top Dynamic Island & Status Bar -->
+      <div class="h-10 pt-2 px-6 flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200 z-30 select-none">
+        <span id="liveClock" class="text-[12px] tracking-tight">09:41</span>
+        
+        <div class="w-20 h-4 bg-black rounded-full flex items-center justify-center">
+          <div class="w-2 h-2 rounded-full bg-orange-500/40"></div>
+        </div>
+
+        <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+          <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+          <i data-lucide="battery-medium" class="w-4 h-4"></i>
+        </div>
+      </div>
+
+      <!-- App Header & Navigation Tabs -->
+      <div class="px-5 pt-3 pb-2 bg-white/95 dark:bg-slate-900/95 border-b border-slate-100 dark:border-slate-800 z-20 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>今日話題</span>
+              <span class="text-xs font-normal text-slate-400">8月20日 · Daily Picks</span>
+            </h2>
+          </div>
+          <!-- Random Surprise Button -->
+          <button onclick="pickRandomTopic()" class="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800/80 px-2.5 py-1.5 rounded-full hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-all active:scale-95 shadow-xs" title="隨機抽一個素材">
+            <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
+            <span>隨機抽</span>
+          </button>
+        </div>
+
+        <!-- 3 Big Main Tabs -->
+        <div class="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl text-xs font-bold">
+          <button onclick="selectCategory('trend')" id="tabBtn-trend" class="py-2 rounded-xl bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-300 shadow-xs flex items-center justify-center gap-1 transition-all">
+            <span>🔥 Google 趨勢</span>
+          </button>
+          <button onclick="selectCategory('classic')" id="tabBtn-classic" class="py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 flex items-center justify-center gap-1 transition-all">
+            <span>☕ 經典閒聊</span>
+          </button>
+          <button onclick="selectCategory('joke')" id="tabBtn-joke" class="py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 flex items-center justify-center gap-1 transition-all">
+            <span>😂 幽默笑話</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card Viewport Area (Scrollable) -->
+      <div id="cardViewport" class="flex-1 p-4 overflow-y-auto space-y-4">
+        
+        <!-- Main Highlight Card -->
+        <div id="mainCard" class="card-enter bg-white dark:bg-slate-800/90 rounded-3xl border border-slate-200/90 dark:border-slate-700/80 p-5 shadow-sm space-y-4 relative">
+          
+          <!-- Category & Google Trends Spike Badge -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span id="badgeCategory" class="text-xs px-2.5 py-0.5 rounded-full font-extrabold bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 flex items-center gap-1">
+                🔥 Google 趨勢
+              </span>
+              <!-- Google Trends Source Tag -->
+              <span id="badgeGoogleTrend" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center gap-1 border border-slate-200 dark:border-slate-600">
+                <i data-lucide="trending-up" class="w-3 h-3 text-sky-500"></i>
+                <span id="trendKeyword">Google Trends: 吉伊卡哇 +500%</span>
+              </span>
+            </div>
+            
+            <div class="flex items-center gap-1">
+              <!-- Speak Button -->
+              <button onclick="speakContent('zh')" class="p-1.5 rounded-lg text-slate-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors text-[10px] font-bold flex items-center gap-0.5" title="朗讀中文">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> 🇹🇼 中
+              </button>
+              <button onclick="speakContent('en')" class="p-1.5 rounded-lg text-slate-500 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-slate-700 transition-colors text-[10px] font-bold flex items-center gap-0.5" title="Play English TTS">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> 🇺🇸 EN
+              </button>
+              <!-- Bookmark Button -->
+              <button onclick="toggleBookmark()" id="btnBookmark" class="p-2 rounded-full text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-colors" title="收藏">
+                <i data-lucide="bookmark" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bilingual Title -->
+          <div class="space-y-1">
+            <h3 id="cardTitleZh" class="text-base font-black text-slate-900 dark:text-white leading-snug">
+              吉伊卡哇熱氣球萌翻台東！社群熱搜狂飆
+            </h3>
+            <p id="cardTitleEn" class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Chiikawa Hot Air Balloon Festival goes viral in Taitung
+            </p>
+          </div>
+
+          <!-- The Content / Brief in Bilingual -->
+          <div id="contentBox" class="bg-slate-50 dark:bg-slate-900/70 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 text-xs leading-relaxed space-y-2">
+            <div class="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 text-[11px]">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>話題背景與梗概 (Story Brief)：</span>
+            </div>
+            <p id="cardMainContentZh" class="text-slate-700 dark:text-slate-200">
+              台東國際熱氣球嘉年華近期迎來超人氣「吉伊卡哇 (Chiikawa)」聯名熱氣球，吸引數萬名粉絲朝聖，直接衝上台灣 Google 搜尋與社群熱門趨勢榜！
+            </p>
+            <p id="cardMainContentEn" class="text-slate-500 dark:text-slate-400 text-[11px] pt-1 border-t border-slate-200/60 dark:border-slate-800">
+              The annual Taitung Hot Air Balloon Festival went viral after unveiling giant Chiikawa-themed balloons, sparking a massive surge in Google searches and weekend travel plans across Taiwan.
+            </p>
+          </div>
+
+          <!-- How to Drop this in a Conversation (開場怎麼聊) -->
+          <div class="space-y-2">
+            <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-orange-500"></i>
+                <span>🗣️ 開場怎麼聊 (How to Start)：</span>
+              </span>
+              <button onclick="copyLine()" class="text-[10px] text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-0.5 font-bold">
+                <i data-lucide="copy" class="w-3 h-3"></i> 複製開場句
+              </button>
+            </div>
+
+            <!-- Chinese Opening -->
+            <div id="boxOpenZh" class="p-3 rounded-2xl bg-orange-50/80 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/50 space-y-1">
+              <div class="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 uppercase tracking-wider flex items-center gap-1">
+                <span>🇹🇼 自然中文開場</span>
+              </div>
+              <p id="cardOpeningLineZh" class="text-xs font-bold text-orange-950 dark:text-orange-100 leading-relaxed">
+                「你有看到最近台東那個吉伊卡哇的熱氣球嗎？超可愛的！我滑 IG 整面都是那個巨型充氣球在飛！」
+              </p>
+            </div>
+
+            <!-- English Opening -->
+            <div id="boxOpenEn" class="p-3 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-900/50 space-y-1">
+              <div class="text-[10px] font-extrabold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex items-center justify-between">
+                <span>🇺🇸 Natural English Line</span>
+                <span class="text-[10px] text-slate-400 font-normal">點擊上方 🇺🇸 可試聽</span>
+              </div>
+              <p id="cardOpeningLineEn" class="text-xs font-bold text-sky-950 dark:text-sky-100 leading-relaxed">
+                “Have you seen the photos of those giant Chiikawa hot air balloons in Taitung? My entire feed is blowing up with them!”
+              </p>
+              <p id="cardOpeningNotes" class="text-[10px] text-sky-700/80 dark:text-sky-300/80">
+                💡 實用語法：feed is blowing up with (社群動態被...瘋狂洗版)
+              </p>
+            </div>
+          </div>
+
+          <!-- Follow-up Questions -->
+          <div class="bg-slate-50 dark:bg-slate-850 rounded-2xl p-3 border border-slate-200/60 dark:border-slate-750 space-y-1 text-xs">
+            <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>延續話題追問 (Follow-up Question)：</span>
+            </div>
+            <p id="cardFollowUpZh" class="text-slate-800 dark:text-slate-200 font-medium">
+              🇹🇼 「話說你平常會關注這種可愛 IP 或去熱氣球節嗎？」
+            </p>
+            <p id="cardFollowUpEn" class="text-slate-500 dark:text-slate-400 text-[11px]">
+              🇺🇸 “Are you usually into character collabs, or have you ever been to a hot air balloon festival?”
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Carousel / Next Topic Navigation -->
+        <div class="flex items-center justify-between px-1">
+          <button onclick="prevCard()" class="px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors flex items-center gap-1">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i> 上一個
+          </button>
+
+          <span id="pageIndicator" class="text-xs font-semibold text-slate-400">1 / 4</span>
+
+          <button onclick="nextCard()" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-600/20 transition-all flex items-center gap-1 active:scale-95">
+            下一個 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Saved Pocket Cheat List -->
+        <div class="pt-2">
+          <div class="bg-slate-50 dark:bg-slate-850 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="bookmark-check" class="w-3.5 h-3.5 text-orange-500"></i> 口袋收藏庫 (<span id="savedCount">1</span>)
+              </span>
+              <button onclick="toggleSavedDrawer()" id="btnToggleDrawer" class="text-[11px] text-orange-600 dark:text-orange-400 hover:underline">
+                展開查看
+              </button>
+            </div>
+            
+            <div id="savedDrawer" class="hidden space-y-1.5 pt-1 text-[11px]">
+              <div id="savedItemsList" class="space-y-1"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Minimal Bar -->
+      <div class="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 px-6">
+        <span class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-sky-500 inline-block animate-pulse"></span> Google Trends 即時更新
+        </span>
+        <span class="font-medium text-slate-500 dark:text-slate-400">
+          雙語對照 · 輕鬆開聊
+        </span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notice -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl z-[110] transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg">已複製開場白到剪貼簿！</span>
+  </div>
+
+  <script>
+    const topics = {
+      trend: [
+        {
+          id: "tr1",
+          categoryName: "🔥 Google 趨勢",
+          badgeClass: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+          trendSource: "Google Trends: 吉伊卡哇 熱氣球 (+500% 飆升)",
+          titleZh: "吉伊卡哇熱氣球萌翻台東！社群熱搜狂飆",
+          titleEn: "Chiikawa Hot Air Balloon Festival goes viral in Taitung",
+          contentZh: "台東國際熱氣球嘉年華近期迎來超人氣「吉伊卡哇 (Chiikawa)」聯名熱氣球，吸引數萬名粉絲朝聖，直接衝上台灣 Google 搜尋與社群熱門趨勢榜！",
+          contentEn: "The annual Taitung Hot Air Balloon Festival went viral after unveiling giant Chiikawa-themed balloons, sparking a massive surge in Google searches and weekend travel plans across Taiwan.",
+          openingZh: "「你有看到最近台東那個吉伊卡哇的熱氣球嗎？超可愛的！我滑 IG 整面都是那個巨型充氣球在飛！」",
+          openingEn: "“Have you seen the photos of those giant Chiikawa hot air balloons in Taitung? My entire feed is blowing up with them!”",
+          notesEn: "💡 實用語法：feed is blowing up with (社群動態被...瘋狂洗版)",
+          followUpZh: "「話說你平常會關注這種可愛 IP 或去熱氣球節嗎？」",
+          followUpEn: "“Are you usually into character collabs, or have you ever been to a hot air balloon festival?”"
+        },
+        {
+          id: "tr2",
+          categoryName: "🔥 Google 趨勢",
+          badgeClass: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+          trendSource: "Google Trends: 英仙座流星雨 / Perseids (熱搜第一)",
+          titleZh: "年度最美英仙座流星雨大爆發：肉眼就能看！",
+          titleEn: "Perseid Meteor Shower peaks with breathtaking stargazing views",
+          contentZh: "每小時高達近百顆流星的英仙座流星雨在八月中旬達到極大期，吸引全台各大高山與海邊湧現夜衝觀星人潮，成為 Google 與社群最熱門的浪漫話題。",
+          contentEn: "The annual Perseid meteor shower peaked recently with up to 100 shooting stars per hour, making stargazing road trips the #1 trending outdoor activity this week.",
+          openingZh: "「上週末英仙座流星雨極大期，你有沒有跑去光害少的地方看星星？聽說這次每小時可以看到幾十顆耶！」",
+          openingEn: "“Did you get a chance to catch the Perseid meteor shower over the weekend? I heard you could spot dozens of shooting stars!”",
+          notesEn: "💡 實用語法：spot shooting stars (看見流星), catch the meteor shower (欣賞流星雨)",
+          followUpZh: "「如果你看到流星許願，你第一件會想許什麼願望？」",
+          followUpEn: "“If you caught a shooting star right now, what would be your top wish?”"
+        },
+        {
+          id: "tr3",
+          categoryName: "🔥 Google 趨勢",
+          badgeClass: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+          trendSource: "Google Trends: AI Coding Agent / 智慧戒指 (+350%)",
+          titleZh: "科技圈都在聊：AI 自動寫扣與智慧戒指睡眠監測",
+          titleEn: "Smart Rings & Autonomous AI Coding Agents take the spotlight",
+          contentZh: "全球科技搜尋趨勢顯示，工程師與創業者對『自主 AI Coding Agent』及監測深層睡眠與壓力指數的『Smart Ring 智慧戒指』關注度持續突破歷史新高。",
+          contentEn: "Google tech trends reveal an all-time high interest in autonomous AI coding assistants and Smart Rings that seamlessly track sleep recovery and daily stress levels.",
+          openingZh: "「話說你最近有試過那些新的 AI 助手嗎？現在真的進步到只要一句話就能寫出完整功能了，太狂了！」",
+          openingEn: "“Have you tried any of the newest AI coding tools lately? It’s crazy how they can build full prototypes in just a few minutes now.”",
+          notesEn: "💡 實用語法：build full prototypes (打造完整原型), It's crazy how... (太驚人了)",
+          followUpZh: "「你平常工作或生活上有什麼重複性任務最想交給 AI 處理？」",
+          followUpEn: "“What repetitive tasks in your daily routine would you love to automate with AI?”"
+        },
+        {
+          id: "tr4",
+          categoryName: "🔥 Google 趨勢",
+          badgeClass: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+          trendSource: "Google Trends: 中元普渡 零食箱 / Snack Box (+400%)",
+          titleZh: "中元普渡零食大戰：辦公室零食櫃即將大進補！",
+          titleEn: "Ghost Festival snack hauls: Offices gear up for mega stock-ups",
+          contentZh: "農曆七月中元普渡各量販店與電商推出超大澎湃零食箱，社群上大家都在曬哪款洋芋片或進口泡麵 CP 值最高，也成了辦公室最歡樂的茶水間話題。",
+          contentEn: "Mid-August Ghost Festival promotions have supermarket snack boxes trending, with office workers eagerly voting on their favorite chips and instant noodles to stock the pantry.",
+          openingZh: "「最近是不是快中元普渡了？我已經看到好多人開始團購大箱零食，我們辦公室茶水間要大進補了哈哈！」",
+          openingEn: "“Ghost Festival is coming up, and I noticed everyone ordering giant snack boxes. Looks like our pantry is about to get a major upgrade!”",
+          notesEn: "💡 實用語法：pantry (茶水間/零食櫃), get a major upgrade (迎來大升級)",
+          followUpZh: "「在所有零食裡面，有沒有哪一款是你看到就一定會抓來吃的？」",
+          followUpEn: "“Out of all the snacks in the breakroom, what’s the one thing you can never resist?”"
+        }
+      ],
+      classic: [
+        {
+          id: "cl1",
+          categoryName: "☕ 經典閒聊",
+          badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+          trendSource: "經典百搭 · 咖啡茶水間 (Evergreen)",
+          titleZh: "週一或週五的咖啡破冰：具體又輕鬆的問候法",
+          titleEn: "Monday/Friday Coffee Break: Natural weekend openers",
+          contentZh: "老外或同事常覺得單純問 'How was your weekend' 容易只得到 'Good'。換成二選一（如：戶外跑還是補眠充能），能瞬間打開對話！",
+          contentEn: "Asking a binary or observational question (e.g. outdoor adventure vs. recharging at home) gets people talking much faster than a generic 'How are you'.",
+          openingZh: "「早安！上週末天氣這麼好，你有趁機出門走走，還是好好在家補眠充電？」",
+          openingEn: "“Happy Monday! Did you get a chance to enjoy the sunshine over the weekend, or did you just take it easy at home?”",
+          notesEn: "💡 實用語法：take it easy (輕鬆放鬆), get a chance to (有機會做...)",
+          followUpZh: "「話說你週末通常是戶外探索派，還是居家充電派居多呀？」",
+          followUpEn: "“Are you usually an outdoor explorer on weekends, or do you prefer staying in to recharge?”"
+        },
+        {
+          id: "cl2",
+          categoryName: "☕ 經典閒聊",
+          badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+          trendSource: "經典百搭 · 午餐覓食指南 (Foodie Talk)",
+          titleZh: "午餐吃什麼是永恆話題：請教附近隱藏版美食",
+          titleEn: "The eternal lunch question: Asking for hidden gem eateries",
+          contentZh: "午餐吃什麼是大家的日常難題。主動請教對方常去的口袋名單，既能表達對對方品味的信任，也能自然聊到飲食喜好。",
+          contentEn: "Lunch dilemmas are universally relatable. Asking someone for their trusted local food spots is an effortless way to spark an enthusiastic conversation.",
+          openingZh: "「這附近午餐快被我吃遍了！你有沒有哪家口袋名單是吃了好幾次還是覺得很推的？」",
+          openingEn: "“I feel like I've eaten everywhere around here! Do you have any go-to lunch spots you’d recommend?”",
+          notesEn: "💡 實用語法：go-to spots (常去的口袋愛店), eaten everywhere around here (附近都吃遍了)",
+          followUpZh: "「你平常中午偏好速戰速決的便當麵食，還是會想找地方坐著慢慢吃？」",
+          followUpEn: "“Do you prefer grabbing a quick bite or sitting down somewhere to relax for lunch?”"
+        },
+        {
+          id: "cl3",
+          categoryName: "☕ 經典閒聊",
+          badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+          trendSource: "經典百搭 · 影集與音樂 (Pop Culture)",
+          titleZh: "聊近期著迷的影集、動漫或 Podcast",
+          titleEn: "Binge-worthy shows & commute podcasts",
+          contentZh: "分享自己通勤最近聽到的有趣內容，並順勢詢問對方的放鬆方式，能輕鬆找到共同興趣。",
+          contentEn: "Sharing a light observation about your current commute show or podcast makes it comfortable for the other person to share their favorites.",
+          openingZh: "「我最近通勤剛把一部懸疑劇追完，突然有點劇荒！你最近有沒有在看什麼不錯的劇？」",
+          openingEn: "“I just finished binge-watching a mystery series on my commute and need new recommendations! Are you watching anything good lately?”",
+          notesEn: "💡 實用語法：binge-watching (一口氣追劇), need recommendations (求推薦)",
+          followUpZh: "「你看劇通常是會一口氣熬夜刷完，還是每天看一集慢慢品味？」",
+          followUpEn: "“Are you the type to binge a whole season in one night, or do you pace it out?”"
+        }
+      ],
+      joke: [
+        {
+          id: "jk1",
+          categoryName: "😂 幽默笑話",
+          badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+          trendSource: "雙語工程師梗 · 輕鬆防冷場",
+          titleZh: "「為什麼電腦永遠不會覺得熱？」",
+          titleEn: "Why are computers never hot?",
+          contentZh: "問：為什麼電腦一整天高速運轉都不會覺得熱？\n答：因為它有「很多 Windows (窗戶)」而且一直在「開窗通風」！",
+          contentEn: "Q: Why do computers never get overheated?\nA: Because they always have plenty of 'Windows' open for fresh air!",
+          openingZh: "「我剛看到一個超冷的地獄冷笑話：你知道為什麼電腦一整天都不會熱嗎？因為它隨時都在開 Windows 窗戶透氣！哈哈哈！」",
+          openingEn: "“I just heard a classic dad joke: Why are computers never hot? Because they always keep their Windows open! Haha!”",
+          notesEn: "💡 雙關梗：Windows (微軟視窗系統 / 實體窗戶)",
+          followUpZh: "「你有聽過什麼讓你笑出來的工程師冷笑話嗎？」",
+          followUpEn: "“Have you heard any good dad jokes or tech puns recently?”"
+        },
+        {
+          id: "jk2",
+          categoryName: "😂 幽默笑話",
+          badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+          trendSource: "上班族打工魂 · 會心一笑",
+          titleZh: "「店員問內用還是外帶，他哭了...」",
+          titleEn: "For here or to go? A coffee confession",
+          contentZh: "問：店員問小明：「先生，內用還是外帶？」\n小明哭著說：「可以把我也帶走嗎？我不想回去上班了...」",
+          contentEn: "Barista: 'Is that for here or to go?'\nMe: 'Can you take me to go too? I really don't wanna go back to the office...'",
+          openingZh: "「剛剛去買咖啡突然想到一個廢到笑的梗：店員問要內用還是外帶，客人說『能把我也帶走嗎，我不想上班了』哈哈哈哈！」",
+          openingEn: "“I just saw a hilarious meme: When the barista asks 'for here or to go?', and you just want them to take YOU to go instead of going back to work!”",
+          notesEn: "💡 實用語法：for here or to go (內用還是外帶), take me to go (把我帶走)",
+          followUpZh: "「今天下午需要靠幾杯咖啡才能撐到下班？」",
+          followUpEn: "“How many cups of coffee is it going to take to survive the rest of the day?”"
+        },
+        {
+          id: "jk3",
+          categoryName: "😂 幽默笑話",
+          badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+          trendSource: "破冰互動題 · 3秒出奇制勝",
+          titleZh: "「世界上什麼動物最喜歡問為什麼？」",
+          titleEn: "Which animal always asks 'why'?",
+          contentZh: "問：世界上什麼動物最喜歡一直問為什麼？\n答：豬！\n對方：「為什麼？」\n你：「你看，你剛剛問了！」",
+          contentEn: "Q: What animal always asks 'Why?'\nA: A pig!\nFriend: 'Why?'\nYou: 'See? You just asked!'",
+          openingZh: "「考你一題腦筋急轉彎：你知道世界上什麼動物最喜歡一直問『為什麼』嗎？（等對方問為什麼時直接得分！）」",
+          openingEn: "“Quick riddle: Do you know what animal loves asking 'Why?' the most? (Wait for them to ask 'Why?' and laugh!)”",
+          notesEn: "💡 聚會百試百靈的互動破冰笑點！",
+          followUpZh: "「這招真的超適合聚餐或電梯突然冷場時使用！」",
+          followUpEn: "“It never fails to break the ice in a quiet elevator or meeting!”"
+        }
+      ]
+    };
+
+    let activeCategory = 'trend';
+    let currentIndex = 0;
+    let langMode = 'bilingual';
+    let savedBookmarks = new Set(['tr1']);
+
+    function selectCategory(cat) {
+      activeCategory = cat;
+      currentIndex = 0;
+      ['trend', 'classic', 'joke'].forEach(c => {
+        const btn = document.getElementById(`tabBtn-${c}`);
+        if (c === cat) {
+          if (c === 'trend') btn.className = "py-2 rounded-xl bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-300 shadow-xs flex items-center justify-center gap-1 transition-all";
+          if (c === 'classic') btn.className = "py-2 rounded-xl bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-300 shadow-xs flex items-center justify-center gap-1 transition-all";
+          if (c === 'joke') btn.className = "py-2 rounded-xl bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-300 shadow-xs flex items-center justify-center gap-1 transition-all";
+        } else {
+          btn.className = "py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 flex items-center justify-center gap-1 transition-all";
+        }
+      });
+      renderCurrent();
+    }
+
+    function setLangMode(mode) {
+      langMode = mode;
+      ['bilingual', 'zh', 'en'].forEach(m => {
+        const btn = document.getElementById(`btnLang${m.charAt(0).toUpperCase() + m.slice(1)}`);
+        if (m === mode) {
+          btn.className = "px-2 py-1 rounded-md bg-white dark:bg-slate-700 shadow-xs text-orange-600 dark:text-orange-400 text-[11px] font-bold transition-all";
+        } else {
+          btn.className = "px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 text-[11px] font-semibold transition-all";
+        }
+      });
+      renderCurrent();
+    }
+
+    function renderCurrent() {
+      const list = topics[activeCategory];
+      if (currentIndex >= list.length) currentIndex = 0;
+      if (currentIndex < 0) currentIndex = list.length - 1;
+      const item = list[currentIndex];
+
+      const badge = document.getElementById('badgeCategory');
+      badge.innerText = item.categoryName;
+      badge.className = `text-xs px-2.5 py-0.5 rounded-full font-extrabold ${item.badgeClass} flex items-center gap-1`;
+      document.getElementById('trendKeyword').innerText = item.trendSource;
+
+      const tZh = document.getElementById('cardTitleZh');
+      const tEn = document.getElementById('cardTitleEn');
+      tZh.innerText = item.titleZh;
+      tEn.innerText = item.titleEn;
+
+      const cZh = document.getElementById('cardMainContentZh');
+      const cEn = document.getElementById('cardMainContentEn');
+      cZh.innerText = item.contentZh;
+      cEn.innerText = item.contentEn;
+
+      document.getElementById('cardOpeningLineZh').innerText = item.openingZh;
+      document.getElementById('cardOpeningLineEn').innerText = item.openingEn;
+      document.getElementById('cardOpeningNotes').innerText = item.notesEn || '';
+
+      const fuZh = document.getElementById('cardFollowUpZh');
+      const fuEn = document.getElementById('cardFollowUpEn');
+      fuZh.innerText = `🇹🇼 ${item.followUpZh}`;
+      fuEn.innerText = `🇺🇸 ${item.followUpEn}`;
+
+      const boxZh = document.getElementById('boxOpenZh');
+      const boxEn = document.getElementById('boxOpenEn');
+
+      if (langMode === 'zh') {
+        tZh.classList.remove('hidden'); tEn.classList.add('hidden');
+        cZh.classList.remove('hidden'); cEn.classList.add('hidden');
+        boxZh.classList.remove('hidden'); boxEn.classList.add('hidden');
+        fuZh.classList.remove('hidden'); fuEn.classList.add('hidden');
+      } else if (langMode === 'en') {
+        tZh.classList.add('hidden'); tEn.classList.remove('hidden');
+        cZh.classList.add('hidden'); cEn.classList.remove('hidden');
+        boxZh.classList.add('hidden'); boxEn.classList.remove('hidden');
+        fuZh.classList.add('hidden'); fuEn.classList.remove('hidden');
+      } else {
+        tZh.classList.remove('hidden'); tEn.classList.remove('hidden');
+        cZh.classList.remove('hidden'); cEn.classList.remove('hidden');
+        boxZh.classList.remove('hidden'); boxEn.classList.remove('hidden');
+        fuZh.classList.remove('hidden'); fuEn.classList.remove('hidden');
+      }
+
+      document.getElementById('pageIndicator').innerText = `${currentIndex + 1} / ${list.length}`;
+
+      const isSaved = savedBookmarks.has(item.id);
+      const btnBm = document.getElementById('btnBookmark');
+      btnBm.className = isSaved
+        ? "p-2 rounded-full text-amber-500 bg-amber-50 dark:bg-amber-950/60 transition-colors"
+        : "p-2 rounded-full text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-colors";
+
+      const card = document.getElementById('mainCard');
+      card.classList.remove('card-enter');
+      void card.offsetWidth;
+      card.classList.add('card-enter');
+
+      renderSavedList();
+      lucide.createIcons();
+    }
+
+    function nextCard() {
+      const list = topics[activeCategory];
+      currentIndex = (currentIndex + 1) % list.length;
+      renderCurrent();
+    }
+
+    function prevCard() {
+      const list = topics[activeCategory];
+      currentIndex = (currentIndex - 1 + list.length) % list.length;
+      renderCurrent();
+    }
+
+    function pickRandomTopic() {
+      const categories = ['trend', 'classic', 'joke'];
+      const randCat = categories[Math.floor(Math.random() * categories.length)];
+      const randIdx = Math.floor(Math.random() * topics[randCat].length);
+      activeCategory = randCat;
+      currentIndex = randIdx;
+      selectCategory(randCat);
+      showToast("🎲 已隨機為您抽取一則雙語素材！");
+      confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
+    }
+
+    function toggleBookmark() {
+      const item = topics[activeCategory][currentIndex];
+      if (savedBookmarks.has(item.id)) {
+        savedBookmarks.delete(item.id);
+        showToast("已從口袋收藏移除");
+      } else {
+        savedBookmarks.add(item.id);
+        showToast("已收藏至口袋錦囊 ⭐");
+        confetti({ particleCount: 40, spread: 45, origin: { y: 0.8 } });
+      }
+      renderCurrent();
+    }
+
+    function renderSavedList() {
+      document.getElementById('savedCount').innerText = savedBookmarks.size;
+      const container = document.getElementById('savedItemsList');
+      if (savedBookmarks.size === 0) {
+        container.innerHTML = `<div class="text-slate-400 py-1">尚無收藏話題，點擊卡片右上角 ⭐ 即可收藏！</div>`;
+        return;
+      }
+
+      let allItems = [...topics.trend, ...topics.classic, ...topics.joke];
+      let savedArr = allItems.filter(t => savedBookmarks.has(t.id));
+
+      container.innerHTML = savedArr.map(item => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
+          <div class="truncate pr-2">
+            <div class="font-bold text-slate-800 dark:text-slate-200 truncate">${item.categoryName} · ${item.titleZh}</div>
+            <div class="text-[10px] text-slate-400 truncate">${item.titleEn}</div>
+          </div>
+          <button onclick="copyCustomText('${item.openingZh.replace(/'/g, "\\'")}\\n${item.openingEn.replace(/'/g, "\\'")}')" class="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline flex-shrink-0">複製中英</button>
+        </div>
+      `).join('');
+    }
+
+    function toggleSavedDrawer() {
+      const drawer = document.getElementById('savedDrawer');
+      const btn = document.getElementById('btnToggleDrawer');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        btn.innerText = "收起";
+      } else {
+        drawer.classList.add('hidden');
+        btn.innerText = "展開查看";
+      }
+    }
+
+    function copyLine() {
+      const item = topics[activeCategory][currentIndex];
+      let textToCopy = '';
+      if (langMode === 'zh') textToCopy = item.openingZh;
+      else if (langMode === 'en') textToCopy = item.openingEn;
+      else textToCopy = `${item.openingZh}\n${item.openingEn}`;
+      copyCustomText(textToCopy);
+    }
+
+    function copyCustomText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("已複製開場白到剪貼簿 📋");
+      });
+    }
+
+    function speakContent(lang) {
+      const item = topics[activeCategory][currentIndex];
+      const textToSpeak = lang === 'en' ? item.openingEn : item.openingZh;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const cleanText = textToSpeak.replace(/^[“"「]|[”"」]$/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = lang === 'en' ? 'en-US' : 'zh-TW';
+        utterance.rate = lang === 'en' ? 0.95 : 1.0;
+        window.speechSynthesis.speak(utterance);
+        showToast(lang === 'en' ? "正在播放美式英語示範發音 🔊" : "正在播放繁體中文示範發音 🔊");
+      } else {
+        showToast("瀏覽器暫不支援語音播放");
+      }
+    }
+
+    function setViewMode(mode) {
+      const container = document.getElementById('appContainer');
+      const btnMob = document.getElementById('btnViewMobile');
+      const btnFull = document.getElementById('btnViewFull');
+      if (mode === 'full') {
+        container.className = "w-full max-w-2xl h-[820px] bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 relative flex flex-col overflow-hidden device-screen";
+        btnFull.className = "px-2.5 py-1 rounded-md bg-white dark:bg-slate-700 shadow-xs text-orange-600 dark:text-orange-400 flex items-center gap-1.5 transition-all";
+        btnMob.className = "px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-all";
+      } else {
+        container.className = "w-full max-w-[440px] h-[820px] bg-white dark:bg-slate-900 rounded-[40px] shadow-2xl border-[8px] border-slate-800 dark:border-slate-700 relative flex flex-col overflow-hidden device-screen";
+        btnMob.className = "px-2.5 py-1 rounded-md bg-white dark:bg-slate-700 shadow-xs text-orange-600 dark:text-orange-400 flex items-center gap-1.5 transition-all";
+        btnFull.className = "px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-all";
+      }
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      const icon = document.getElementById('themeIcon');
+      icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      lucide.createIcons();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2200);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = `${hours}:${minutes}`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateClock();
+      setInterval(updateClock, 10000);
+      renderCurrent();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
