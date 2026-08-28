@@ -1,6 +1,8 @@
 # 🌐 Small Talk Daily (雙語閒聊日報)
 
 > **告別冷場與社交焦慮的隨身話題錦囊 · 中英雙語對照 · Google Trends 即時熱搜趨勢**
+>
+> _Your bilingual small-talk companion for Taiwan office life, powered by Google Trends and natural conversation starters_
 
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
@@ -47,6 +49,32 @@
 
 ---
 
+## 📚 話題卡牌結構 (Topic Deck Structure)
+
+專案內建三大類話題卡牌，存放於 `src/data/topics.ts`：
+
+### 🔥 Google 趨勢 (Trends) — 約 7 張卡片
+* 追蹤台灣與全球即時熱搜話題（世足賽、科技新聞、颱風天氣、國防議題等）
+* **注意**：趨勢話題時效性強，建議每 1-2 週檢查更新
+* 更新方式：
+  1. 執行 `npm run fetch:trends` 查看最新 Google Trends 熱搜
+  2. 手動編輯 `src/data/topics.ts` 將過時卡片替換為新趨勢
+  3. 保持 `trendSource` 標註來源與真實性（避免編造假數據）
+
+### ☕ 經典閒聊 (Classic) — 約 12 張卡片
+* 不敗百搭的台灣日常話題（咖啡、午餐、通勤、夜市、手搖飲、颱風假、週末計畫等）
+* 適用於任何時間、任何場合的辦公室 / 電梯 / 茶水間破冰
+* 這些卡片長青不過時，可隨時依在地文化新增更多主題
+
+### 😂 幽默笑話 (Jokes) — 約 10 張卡片
+* 3 秒防冷場的雙語冷笑話、工程師梗、上班族自嘲梗
+* 乾淨、安全、適合職場的幽默內容
+* 中英雙語雙關梗，既練口語又能輕鬆開場
+
+所有卡片遵循 `TopicItem` schema（定義於 `src/types/topic.ts`），包含標題、內容、開場白、延伸提問及英語用法筆記。
+
+---
+
 ## 🚀 快速開始 (Quick Start)
 
 ### 1. 安裝依賴 (Install Dependencies)
@@ -60,16 +88,23 @@ npm run dev
 ```
 瀏覽器開啟：`http://localhost:3000`
 
-### 3. 測試 Google Trends 擷取腳本
-```bash
-npm run fetch:trends
-```
-
-### 4. 構建生產版本 (Production Build)
+### 3. 構建生產版本 (Production Build)
 ```bash
 npm run build
 npm run preview
 ```
+
+### 4. （選用）刷新 Google Trends 熱搜話題
+```bash
+npm run fetch:trends
+```
+此腳本會自動擷取台灣與全球 Google Trends RSS，顯示最新熱搜關鍵字與流量數據。
+
+**重要提醒**：腳本僅顯示趨勢數據，不會自動更新 `src/data/topics.ts`。你需要：
+1. 查看腳本輸出的熱搜關鍵字
+2. 手動編輯 `src/data/topics.ts` 替換過時的趨勢卡片
+3. 撰寫自然、可用的中英雙語開場白與延伸話題
+4. 保持 `trendSource` 欄位的真實性（不要編造假的 "+500% 飆升" 數據）
 
 ---
 
