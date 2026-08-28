@@ -14,8 +14,9 @@
 ## ✨ 核心特色 (Key Features)
 
 1. **🔥 Google Trends 即時熱搜趨勢 (Google Trends Buzz)**
-   * 每天自動串接台灣與全球 Google Trends 搜尋飆升榜。
+   * 趨勢話題標籤載入來自 [小閒聊日報 API](https://small-talk-daily-api.thusnoy.workers.dev) 的即時 Google Trends 數據。
    * 將時事、文化、科技話題轉化為 30 秒安全、有趣的聊天破冰切入點。
+   * 若 API 無法連線，自動降級為靜態備援話題庫。
 
 2. **🌐 全面中英雙語對照 (Bilingual Chinese & English)**
    * **🇹🇼 自然中文開場** ＋ **🇺🇸 Natural English Line**。
@@ -45,7 +46,9 @@
 * **樣式庫**：Tailwind CSS v4 + Lucide React Icons
 * **語音能力**：Web Speech Synthesis API
 * **互動特效**：Canvas Confetti
-* **趨勢管線**：Google Trends RSS Ingestion Engine (Node.js)
+* **即時 API**：Cloudflare Workers (小閒聊日報 API)
+* **部署平台**：Cloudflare Pages + Functions
+* **趨勢輔助工具**：`scripts/fetch_google_trends.js` (本地 RSS 查看用)
 
 ---
 
@@ -94,17 +97,36 @@ npm run build
 npm run preview
 ```
 
-### 4. （選用）刷新 Google Trends 熱搜話題
+### 4. （選用）查看 Google Trends 熱搜關鍵字
 ```bash
 npm run fetch:trends
 ```
-此腳本會自動擷取台灣與全球 Google Trends RSS，顯示最新熱搜關鍵字與流量數據。
+此本地輔助腳本擷取台灣與全球 Google Trends RSS，顯示最新熱搜關鍵字與流量數據。
 
-**重要提醒**：腳本僅顯示趨勢數據，不會自動更新 `src/data/topics.ts`。你需要：
-1. 查看腳本輸出的熱搜關鍵字
-2. 手動編輯 `src/data/topics.ts` 替換過時的趨勢卡片
-3. 撰寫自然、可用的中英雙語開場白與延伸話題
-4. 保持 `trendSource` 欄位的真實性（不要編造假的 "+500% 飆升" 數據）
+**用途**：作為手動編輯靜態備援話題的參考工具。
+- **趨勢話題標籤**：前端會優先載入 [小閒聊日報 API](https://small-talk-daily-api.thusnoy.workers.dev) 的即時數據
+- **靜態備援**：`src/data/topics.ts` 中的 `trend` 卡片僅在 API 失效時作為降級備援
+- **經典/笑話**：`classic` 與 `joke` 卡片永遠使用靜態檔案（不走 API）
+
+---
+
+## 🌐 API 與部署架構 (API & Deployment)
+
+### 即時趨勢 API
+* **Worker API**: `https://small-talk-daily-api.thusnoy.workers.dev`
+* **端點**: `GET /api/cards/draw?category=TaiwanTrends&region=TW&limit=10`
+* **回傳格式**: JSON 陣列，包含 `topic_id`, `category`, `title.zh/en`, `background.zh/en`, `icebreaker_question.zh/en` 等欄位
+
+### Cloudflare Pages 部署
+* **生產環境**: https://small-talk-daily.pages.dev
+* **Pages Function 代理**: `functions/api/[[path]].ts` 將前端的 `/api/*` 請求伺服器端代理到 Worker API，避免瀏覽器端 HMAC 簽章問題
+* **環境變數**: `WORKER_API_URL`（預設值：`https://small-talk-daily-api.thusnoy.workers.dev`）
+
+### 本地開發
+```bash
+npm run dev
+```
+**注意**：本地開發時 `/api/*` 會 404，因為 Pages Functions 只在 Cloudflare Pages 部署時運作。前端會自動降級為靜態備援話題。
 
 ---
 

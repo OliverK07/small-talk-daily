@@ -7,6 +7,7 @@ import { SavedDrawer } from './components/SavedDrawer';
 import { Toast } from './components/Toast';
 import { initialTopics } from './data/topics';
 import { CategoryType, LanguageMode, TopicItem } from './types/topic';
+import { fetchLiveTrendCards } from './services/trendApi';
 
 export const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<CategoryType>('trend');
@@ -20,6 +21,29 @@ export const App: React.FC = () => {
   });
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<string>('09:41');
+  const [trendCards, setTrendCards] = useState<TopicItem[]>(initialTopics.trend);
+  const [isTrendsLive, setIsTrendsLive] = useState<boolean>(false);
+  const [isLoadingTrends, setIsLoadingTrends] = useState<boolean>(true);
+
+  // Fetch live trend cards on mount
+  useEffect(() => {
+    const loadTrends = async () => {
+      setIsLoadingTrends(true);
+      const result = await fetchLiveTrendCards();
+      
+      if (result.isLive && result.cards.length > 0) {
+        setTrendCards(result.cards);
+        setIsTrendsLive(true);
+      } else {
+        // Fallback to static trends
+        setTrendCards(initialTopics.trend);
+        setIsTrendsLive(false);
+      }
+      setIsLoadingTrends(false);
+    };
+    
+    loadTrends();
+  }, []);
 
   // Clock in status bar
   useEffect(() => {
@@ -53,7 +77,14 @@ export const App: React.FC = () => {
     setTimeout(() => setToastMsg(null), 2400);
   };
 
-  const currentList = initialTopics[activeCategory];
+  // Use live trends for 'trend' category, static for classic/joke
+  const topics = {
+    trend: trendCards,
+    classic: initialTopics.classic,
+    joke: initialTopics.joke,
+  };
+
+  const currentList = topics[activeCategory];
   const currentItem: TopicItem = currentList[currentIndex] || currentList[0];
 
   const handleSelectCategory = (cat: CategoryType) => {
@@ -72,7 +103,7 @@ export const App: React.FC = () => {
   const handleRandomPick = () => {
     const cats: CategoryType[] = ['trend', 'classic', 'joke'];
     const randomCat = cats[Math.floor(Math.random() * cats.length)];
-    const list = initialTopics[randomCat];
+    const list = topics[randomCat];
     const randomIdx = Math.floor(Math.random() * list.length);
 
     setActiveCategory(randomCat);
@@ -129,9 +160,9 @@ export const App: React.FC = () => {
 
   // Collect all saved items
   const allItems = [
-    ...initialTopics.trend,
-    ...initialTopics.classic,
-    ...initialTopics.joke,
+    ...topics.trend,
+    ...topics.classic,
+    ...topics.joke,
   ];
   const savedItems = allItems.filter((item) => savedIds.includes(item.id));
 
@@ -197,8 +228,27 @@ export const App: React.FC = () => {
           {/* Bottom Minimal Info Bar */}
           <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 px-6">
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-sky-500 inline-block animate-pulse"></span>
-              Google Trends 即時更新
+              {isLoadingTrends ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-slate-400 inline-block animate-pulse"></span>
+                  載入中...
+                </>
+              ) : isTrendsLive && activeCategory === 'trend' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
+                  即時趨勢
+                </>
+              ) : activeCategory === 'trend' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
+                  靜態備援
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-sky-500 inline-block"></span>
+                  精選話題
+                </>
+              )}
             </span>
             <span className="font-medium text-slate-500 dark:text-slate-400">
               雙語對照 · 輕鬆開聊
