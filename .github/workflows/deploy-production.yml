@@ -1,12 +1,14 @@
 name: Deploy to Production
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       branch:
         description: 'Branch to deploy'
         required: true
-        default: 'cursor/enrich-content-ec16'
+        default: 'main'
 
 jobs:
   deploy:
@@ -18,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ github.event.inputs.branch || 'main' }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
