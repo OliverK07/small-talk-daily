@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
   TrendingUp,
   Volume2,
@@ -37,12 +37,58 @@ export const CardDeck: React.FC<CardDeckProps> = ({
   onCopy,
   onSpeak,
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchCurrent, setTouchCurrent] = useState<number | null>(null);
+
+  // Swipe gesture handlers
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setTouchStart(clientX);
+    setTouchCurrent(clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (touchStart === null) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setTouchCurrent(clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart === null || touchCurrent === null) return;
+    
+    const delta = touchCurrent - touchStart;
+    const minSwipeDistance = 50; // Minimum distance to trigger swipe
+    
+    // Left swipe (negative delta) = next
+    if (delta < -minSwipeDistance) {
+      onNext();
+    }
+    // Right swipe (positive delta) = previous
+    else if (delta > minSwipeDistance) {
+      onPrev();
+    }
+    
+    setTouchStart(null);
+    setTouchCurrent(null);
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Card */}
       <div
+        ref={cardRef}
         key={item.id}
-        className="animate-card-in bg-white dark:bg-slate-800/90 rounded-3xl border border-slate-200/90 dark:border-slate-700/80 p-5 shadow-sm space-y-4 relative"
+        className="animate-card-in bg-white dark:bg-slate-800/90 rounded-3xl border border-slate-200/90 dark:border-slate-700/80 p-5 shadow-sm space-y-4 relative select-none cursor-grab active:cursor-grabbing"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseMove={(e) => {
+          if (e.buttons === 1) handleTouchMove(e); // Only track if mouse button is pressed
+        }}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
       >
         {/* Header Badges & Actions */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -92,21 +138,21 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         </div>
 
         {/* Bilingual Title */}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {langMode !== 'en' && (
-            <h3 className="text-base font-black text-slate-900 dark:text-white leading-snug">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white leading-snug">
               {item.titleZh}
             </h3>
           )}
           {langMode !== 'zh' && (
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               {item.titleEn}
             </p>
           )}
         </div>
 
         {/* The Content Brief */}
-        <div className="bg-slate-50 dark:bg-slate-900/70 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 text-xs leading-relaxed space-y-2">
+        <div className="bg-slate-50 dark:bg-slate-900/70 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 text-sm leading-relaxed space-y-2">
           <div className="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 text-[11px]">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span>話題背景與梗概 (Story Brief)：</span>
@@ -118,7 +164,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
 
           {langMode !== 'zh' && (
             <p
-              className={`text-slate-500 dark:text-slate-400 text-[11px] ${
+              className={`text-slate-500 dark:text-slate-400 text-xs ${
                 langMode === 'bilingual' ? 'pt-1 border-t border-slate-200/60 dark:border-slate-800' : ''
               }`}
             >
@@ -144,11 +190,11 @@ export const CardDeck: React.FC<CardDeckProps> = ({
 
           {/* Chinese Opening */}
           {langMode !== 'en' && (
-            <div className="p-3 rounded-2xl bg-orange-50/80 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/50 space-y-1">
+            <div className="p-3.5 rounded-2xl bg-orange-50/80 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/50 space-y-1.5">
               <div className="text-[10px] font-extrabold text-orange-600 dark:text-orange-400 uppercase tracking-wider flex items-center gap-1">
                 <span>🇹🇼 自然中文開場</span>
               </div>
-              <p className="text-xs font-bold text-orange-950 dark:text-orange-100 leading-relaxed">
+              <p className="text-sm font-bold text-orange-950 dark:text-orange-100 leading-relaxed">
                 {item.openingZh}
               </p>
             </div>
@@ -156,12 +202,12 @@ export const CardDeck: React.FC<CardDeckProps> = ({
 
           {/* English Opening */}
           {langMode !== 'zh' && (
-            <div className="p-3 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-900/50 space-y-1">
+            <div className="p-3.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-900/50 space-y-1.5">
               <div className="text-[10px] font-extrabold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex items-center justify-between">
                 <span>🇺🇸 Natural English Line</span>
                 <span className="text-[10px] text-slate-400 font-normal">點擊上方 🇺🇸 可試聽</span>
               </div>
-              <p className="text-xs font-bold text-sky-950 dark:text-sky-100 leading-relaxed">
+              <p className="text-sm font-bold text-sky-950 dark:text-sky-100 leading-relaxed">
                 {item.openingEn}
               </p>
               {item.notesEn && (
@@ -172,7 +218,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         </div>
 
         {/* Follow-up Questions */}
-        <div className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-3 border border-slate-200/60 dark:border-slate-750 space-y-1 text-xs">
+        <div className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-750 space-y-1.5 text-sm">
           <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
             <HelpCircle className="w-3.5 h-3.5 text-emerald-500" />
             <span>延續話題追問 (Follow-up Question)：</span>
@@ -183,7 +229,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
           )}
 
           {langMode !== 'zh' && (
-            <p className="text-slate-500 dark:text-slate-400 text-[11px]">🇺🇸 {item.followUpEn}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs">🇺🇸 {item.followUpEn}</p>
           )}
         </div>
       </div>
