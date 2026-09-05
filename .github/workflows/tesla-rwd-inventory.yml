@@ -1,0 +1,97 @@
+name: Tesla RWD Inventory Scan
+
+on:
+  schedule:
+    # Every 30 minutes
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (print only, no Telegram / no state update)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tesla-rwd-inventory-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tesla-inventory-scanner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tesla-inventory-scanner/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore seen-VIN cache
+        uses: actions/cache@v4
+        with:
+          path: tesla-inventory-scanner/data/seen_vins.json
+          key: tesla-seen-vins-${{ github.run_id }}
+          restore-keys: |
+            tesla-seen-vins-
+
+      - name: Ensure state directory
+        run: mkdir -p data
+
+      - name: Run inventory scan
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TESLA_MARKET: ${{ vars.TESLA_MARKET }}
+          TESLA_LANGUAGE: ${{ vars.TESLA_LANGUAGE }}
+          TESLA_SUPER_REGION: ${{ vars.TESLA_SUPER_REGION }}
+          TESLA_CONDITION: ${{ vars.TESLA_CONDITION }}
+          TESLA_MODELS: ${{ vars.TESLA_MODELS }}
+          TESLA_TRIMS: ${{ vars.TESLA_TRIMS }}
+          TESLA_ZIP: ${{ vars.TESLA_ZIP }}
+          TESLA_RANGE: ${{ vars.TESLA_RANGE }}
+          TESLA_COUNT: ${{ vars.TESLA_COUNT }}
+          TESLA_COOKIE: ${{ secrets.TESLA_COOKIE }}
+          HTTPS_PROXY: ${{ secrets.HTTPS_PROXY }}
+          NOTIFY_ON_EMPTY: ${{ vars.NOTIFY_ON_EMPTY }}
+          NOTIFY_ON_ERROR: ${{ vars.NOTIFY_ON_ERROR }}
+          STATE_FILE: data/seen_vins.json
+        run: |
+          set -euo pipefail
+          # Apply defaults when repository variables are unset
+          export TESLA_MARKET="${TESLA_MARKET:-TW}"
+          export TESLA_LANGUAGE="${TESLA_LANGUAGE:-zh_TW}"
+          export TESLA_SUPER_REGION="${TESLA_SUPER_REGION:-asia pacific}"
+          export TESLA_CONDITION="${TESLA_CONDITION:-new}"
+          export TESLA_MODELS="${TESLA_MODELS:-my,m3}"
+          export TESLA_RANGE="${TESLA_RANGE:-0}"
+          export TESLA_COUNT="${TESLA_COUNT:-50}"
+          export NOTIFY_ON_EMPTY="${NOTIFY_ON_EMPTY:-false}"
+          export NOTIFY_ON_ERROR="${NOTIFY_ON_ERROR:-true}"
+
+          ARGS=(--json)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          python scan.py "${ARGS[@]}"
+
+      - name: Persist seen-VIN file for cache
+        if: always()
+        run: |
+          mkdir -p data
+          test -f data/seen_vins.json || echo '{"vins":[]}' > data/seen_vins.json

@@ -1,0 +1,33 @@
+{
+  "total_matches_found": 2,
+  "results": [
+    {
+      "VIN": "XP7YGCEK0SB123001",
+      "Year": 2025,
+      "Model": "my",
+      "TrimName": "Rear-Wheel Drive",
+      "TotalPrice": 1499900,
+      "Price": 1499900,
+      "PAINT": ["WHITE"],
+      "INTERIOR": ["BLACK"],
+      "WHEELS": ["NINETEEN"],
+      "City": "Taipei",
+      "IsDemo": false,
+      "OptionCodeList": ["MYRWD", "PPSW", "WY19P"]
+    },
+    {
+      "VIN": "XP7YGCEK0SB123002",
+      "Year": 2025,
+      "Model": "my",
+      "TrimName": "Rear-Wheel Drive",
+      "TotalPrice": 1529900,
+      "Price": 1529900,
+      "PAINT": ["BLACK"],
+      "INTERIOR": ["WHITE"],
+      "WHEELS": ["NINETEEN"],
+      "City": "Taichung",
+      "IsDemo": true,
+      "OptionCodeList": ["MYRWD", "PBSB", "WY19P"]
+    }
+  ]
+}

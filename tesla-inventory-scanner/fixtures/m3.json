@@ -1,0 +1,19 @@
+{
+  "total_matches_found": 1,
+  "results": [
+    {
+      "VIN": "LRW3E7EK5SC456001",
+      "Year": 2025,
+      "Model": "m3",
+      "TrimName": "Long Range Rear-Wheel Drive",
+      "TotalPrice": 1649900,
+      "Price": 1649900,
+      "PAINT": ["BLUE"],
+      "INTERIOR": ["BLACK"],
+      "WHEELS": ["EIGHTEEN"],
+      "City": "Kaohsiung",
+      "IsDemo": false,
+      "OptionCodeList": ["LRRWD", "PPSB", "W38B"]
+    }
+  ]
+}

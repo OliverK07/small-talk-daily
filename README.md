@@ -108,6 +108,10 @@ npm run fetch:trends
 - **靜態備援**：`src/data/topics.ts` 中的 `trend` 卡片僅在 API 失效時作為降級備援
 - **經典/笑話**：`classic` 與 `joke` 卡片永遠使用靜態檔案（不走 API）
 
+### 5. （選用）Tesla 後驅庫存掃描 + Telegram 通知
+另見 [`tesla-inventory-scanner/README.md`](./tesla-inventory-scanner/README.md)。  
+可用 GitHub Actions 每 30 分鐘掃描台灣 Model Y / Model 3 後驅庫存，並把新車推到 Telegram。
+
 ---
 
 ## 🌐 API 與部署架構 (API & Deployment)
