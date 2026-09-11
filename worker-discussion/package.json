@@ -1,0 +1,15 @@
+{
+  "name": "llm-discussion-platform",
+  "version": "1.0.0",
+  "description": "一个简单的远程讨论平台，供LLM应用使用",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260910.1",
+    "wrangler": "^4.127.0"
+  }
+}

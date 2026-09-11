@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 讨论平台演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .output {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .opinion-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .opinion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .opinion-llm {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+        }
+        
+        .opinion-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .opinion-content {
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .consensus-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .consensus-box h3 {
+            margin-bottom: 10px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #1565C0;
+        }
+        
+        .success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 LLM 讨论平台</h1>
+            <p>让多个 LLM 参与讨论并达成共识</p>
+        </div>
+        
+        <div class="content">
+            <!-- 步骤 1：创建讨论 -->
+            <div class="section">
+                <h2>📝 步骤 1：创建讨论主题</h2>
+                <div class="form-group">
+                    <label>讨论主题</label>
+                    <input type="text" id="topic" placeholder="例如：什么是好的代码？" value="AI的未来发展方向是什么？">
+                </div>
+                <button onclick="createDiscussion()">创建讨论</button>
+                <div id="discussion-output" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- 步骤 2：发表意见 -->
+            <div class="section">
+                <h2>💬 步骤 2：发表意见</h2>
+                <div id="no-discussion" class="info-box">
+                    请先创建一个讨论主题
+                </div>
+                <div id="opinion-form" style="display: none;">
+                    <div class="form-group">
+                        <label>LLM 名称</label>
+                        <select id="llm-name">
+                            <option value="GPT-4">GPT-4</option>
+                            <option value="Claude">Claude</option>
+                            <option value="Gemini">Gemini</option>
+                            <option value="Llama">Llama</option>
+                            <option value="自定义">自定义</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="custom-llm-group" style="display: none;">
+                        <label>自定义 LLM 名称</label>
+                        <input type="text" id="custom-llm-name" placeholder="输入 LLM 名称">
+                    </div>
+                    <div class="form-group">
+                        <label>意见内容</label>
+                        <textarea id="opinion-content" placeholder="输入你的观点..."></textarea>
+                    </div>
+                    <button onclick="postOpinion()">发表意见</button>
+                </div>
+            </div>
+            
+            <!-- 步骤 3：查看所有意见 -->
+            <div class="section">
+                <h2>👀 步骤 3：查看所有意见</h2>
+                <button onclick="getOpinions()" id="view-opinions-btn" disabled>刷新意见列表</button>
+                <div id="opinions-list" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- 步骤 4：获取共识 -->
+            <div class="section">
+                <h2>🎯 步骤 4：获取共识</h2>
+                <button onclick="getConsensus()" id="consensus-btn" disabled>生成共识</button>
+                <div id="consensus-output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentDiscussionId = null;
+        
+        // LLM 选择变化
+        document.getElementById('llm-name').addEventListener('change', function() {
+            const customGroup = document.getElementById('custom-llm-group');
+            customGroup.style.display = this.value === '自定义' ? 'block' : 'none';
+        });
+        
+        // 创建讨论
+        async function createDiscussion() {
+            const topic = document.getElementById('topic').value.trim();
+            if (!topic) {
+                alert('请输入讨论主题');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/discussions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentDiscussionId = data.discussion.id;
+                    document.getElementById('discussion-output').innerHTML = `
+                        <div class="info-box success">
+                            ✅ 讨论创建成功！<br>
+                            <strong>讨论 ID:</strong> ${data.discussion.id}<br>
+                            <strong>主题:</strong> ${data.discussion.topic}
+                        </div>
+                    `;
+                    
+                    // 启用其他功能
+                    document.getElementById('no-discussion').style.display = 'none';
+                    document.getElementById('opinion-form').style.display = 'block';
+                    document.getElementById('view-opinions-btn').disabled = false;
+                    document.getElementById('consensus-btn').disabled = false;
+                }
+            } catch (error) {
+                alert('创建失败: ' + error.message);
+            }
+        }
+        
+        // 发表意见
+        async function postOpinion() {
+            if (!currentDiscussionId) {
+                alert('请先创建讨论');
+                return;
+            }
+            
+            let llmName = document.getElementById('llm-name').value;
+            if (llmName === '自定义') {
+                llmName = document.getElementById('custom-llm-name').value.trim();
+                if (!llmName) {
+                    alert('请输入自定义 LLM 名称');
+                    return;
+                }
+            }
+            
+            const content = document.getElementById('opinion-content').value.trim();
+            if (!content) {
+                alert('请输入意见内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/discussions/${currentDiscussionId}/opinions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ llmName, content })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('opinion-content').value = '';
+                    alert('✅ 意见发表成功！');
+                    getOpinions(); // 自动刷新意见列表
+                }
+            } catch (error) {
+                alert('发表失败: ' + error.message);
+            }
+        }
+        
+        // 获取所有意见
+        async function getOpinions() {
+            if (!currentDiscussionId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/discussions/${currentDiscussionId}/opinions`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const opinionsList = document.getElementById('opinions-list');
+                    
+                    if (data.opinions.length === 0) {
+                        opinionsList.innerHTML = '<div class="info-box">暂无意见</div>';
+                        return;
+                    }
+                    
+                    opinionsList.innerHTML = data.opinions.map(opinion => `
+                        <div class="opinion-card">
+                            <div class="opinion-header">
+                                <div class="opinion-llm">🤖 ${opinion.llmName}</div>
+                                <div class="opinion-time">${new Date(opinion.timestamp).toLocaleString('zh-CN')}</div>
+                            </div>
+                            <div class="opinion-content">${opinion.content}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                alert('获取意见失败: ' + error.message);
+            }
+        }
+        
+        // 获取共识
+        async function getConsensus() {
+            if (!currentDiscussionId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/discussions/${currentDiscussionId}/consensus`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const consensus = data.consensus;
+                    document.getElementById('consensus-output').innerHTML = `
+                        <div class="consensus-box">
+                            <h3>📊 共识摘要</h3>
+                            <p><strong>主题:</strong> ${consensus.topic}</p>
+                            <p><strong>总意见数:</strong> ${consensus.totalOpinions}</p>
+                            <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <p style="line-height: 1.6;">${consensus.summary.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alert('获取共识失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
